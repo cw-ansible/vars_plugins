@@ -3,7 +3,7 @@
 
 # Copyright © 2014 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 # Created: 2015-01-15
-# Last changed: 2015-04-03 15:41:23
+# Last changed: 2015-05-04 10:12:10
 #
 # This program is free software. It comes without any warranty, to
 # the extent permitted by applicable law. You can redistribute it
@@ -27,6 +27,36 @@ def _print_slots(obj):
             print '  %s => "%s"' % (slot, getattr(obj, slot))
         except AttributeError:
             print '  %s => NONE' % (slot)
+
+def mergedicts(dict1, dict2):
+    print type(dict1), type(dict1)
+    if isinstance(dict1,dict) and isinstance(dict2,dict):
+        # make sure keys starting with + come last.
+        for k,v in sorted(dict2.iteritems(), reverse=True):
+            # if key starts with a + sign, merge both keys
+            if k.startswith('+'):
+                new_key = k.strip('+')
+                if dict1.has_key(new_key):
+                    ## List
+                    if type(dict1[new_key]) == type([]):
+                        # list of list
+                        if type(dict1[new_key][0]) != type({}):
+                            dict1_set = set(dict1[new_key])
+                            dict1_set.update(v)
+                            dict1[new_key] = list(dict1_set)
+                        else:
+                            # list of hash. do not add hash multiple times.
+                            for _v in v:
+                                if not _v in dict1[new_key]:
+                                    dict1[new_key].append(_v)
+                else:
+                    dict1[new_key] = v
+            else:
+                dict1[k] = v
+    elif isinstance(dict1,list) and isinstance(dict2,list):
+        dict1 += dict2
+
+    return dict1
 
 class VarsModule(object):
 
@@ -80,11 +110,16 @@ class VarsModule(object):
             files_to_read.append(host.vars['custom_vars'])
         
         for var_file in files_to_read:
+            # print host_name, var_file
             if os.path.exists(var_file):
                 for data in yaml.load_all(file(var_file).read()):
                     #print data
                     for k, v in data.iteritems():
-                        host.vars[k] = v
+                        new_key = k.strip('+')
+                        if host.vars.has_key(new_key) and k.startswith('+'):
+                            host.vars[new_key] = mergedicts(host.vars[new_key], v)
+                        else:
+                            host.vars[new_key] = v
 
         # print host.vars
         # for key in [ 'custom_store', 'custom_secret', 'custom_vars', 'custom_path' ]:
