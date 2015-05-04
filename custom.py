@@ -3,7 +3,7 @@
 
 # Copyright © 2014 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 # Created: 2015-01-15
-# Last changed: 2015-05-04 10:12:10
+# Last changed: 2015-05-04 10:13:42
 #
 # This program is free software. It comes without any warranty, to
 # the extent permitted by applicable law. You can redistribute it
@@ -29,7 +29,6 @@ def _print_slots(obj):
             print '  %s => NONE' % (slot)
 
 def mergedicts(dict1, dict2):
-    print type(dict1), type(dict1)
     if isinstance(dict1,dict) and isinstance(dict2,dict):
         # make sure keys starting with + come last.
         for k,v in sorted(dict2.iteritems(), reverse=True):
